@@ -63,8 +63,9 @@ function testClient (done) {
   /// Inject bowerfiles into the karma config file.
   gulp.src('karma.conf.js')
     .pipe(inject(
-      gulp.src(bowerFiles({
-        debugging: false
+      gulp.src(bowerFiles('**/*.js', {
+        debugging: false,
+        includeDev: true
       }).concat(['client/app.js',
           'client/views/**/*.js',
           'client/services/**/*.js',
