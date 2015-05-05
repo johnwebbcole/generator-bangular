@@ -11,6 +11,10 @@ var protractor = require('gulp-protractor');<% } %><% if (filters.karma) { %>
 var karma      = require('karma').server;<% } %><% if (filters.mocha) { %>
 var plumber    = require('gulp-plumber');
 var mocha      = require('gulp-mocha');<% } %>
+var bowerFiles = require('main-bower-files');
+var inject     = require('gulp-inject');
+var es         = require('event-stream');
+var toExclude  = require('./config/bowerFilesToExclude');
 
 /**
  * Log. With options.
@@ -56,9 +60,34 @@ function testClient (done) {
 
   log('Running client tests...', { padding: true });
 <% if (filters.karma) { %>
-  karma.start({
-    configFile: __dirname + '/../karma.conf.js'
-  }, done);<% } else { %>
+  /// Inject bowerfiles into the karma config file.
+  gulp.src('karma.conf.js')
+    .pipe(inject(
+      gulp.src(bowerFiles({
+        debugging: false
+      }).concat(['client/app.js',
+          'client/views/**/*.js',
+          'client/services/**/*.js',
+          'client/directives/**/*.js',
+          'client/directives/**/*.html',
+          'client/filters/**/*.js']), {
+        read: false,
+        base: 'client'
+      }), {
+        ignorePath: toExclude,
+        starttag: 'files: [',
+        endtag: ']',
+        transform: function (filepath, file, i, length) {
+          return '"' + file.relative + '"' + (i + 1 < length ? ',' : '');
+        }
+      }))
+    .pipe(gulp.dest('.'))
+    .pipe(es.wait(function () {
+      karma.start({
+        configFile: __dirname + '/../karma.conf.js'
+      }, done);
+    }));
+  <% } else { %>
   done();
 <% } %>
 }
