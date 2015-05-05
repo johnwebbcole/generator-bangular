@@ -71,7 +71,10 @@ function testClient (done) {
           'client/services/**/*.js',
           'client/directives/**/*.js',
           'client/directives/**/*.html',
-          'client/filters/**/*.js']), {
+          'client/filters/**/*.js',
+          '!client/views/**/*.e2e.js',
+          '!client/services/socket/socket.service.js',
+          '!**/angular-scenario.js']), {
         read: false,
         base: 'client'
       }), {
